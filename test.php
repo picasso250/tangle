@@ -5,6 +5,13 @@ require 'Server.php';
 use Tangle\Server;
 
 $s = new Server();
+if (isset($argv[1])) {
+    $s->address = $argv[1];
+}
+if (isset($argv[2])) {
+    $s->port = intval($argv[2]);
+}
+echo "Listen on $s->address:$s->port\n";
 $s->on('connect', function ($msgsock) {
     /* Send instructions. */
     $msg = "\nWelcome to the PHP Test Server. \n" .
