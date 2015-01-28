@@ -40,6 +40,7 @@ class Server
             pcntl_signal_dispatch();
             $arr = [$sock];
             if (!\socket_select($arr, $arr, $arr, 0)) {
+                echo "\r run ".time();
                 continue;
             }
             if (($msgsock = \socket_accept($sock)) === false) {
@@ -59,8 +60,6 @@ class Server
                     break;
                 } elseif ($action === true) {
                     continue;
-                } elseif ($action) {
-                    eval($action);
                 }
             } while (true);
             \socket_close($msgsock);

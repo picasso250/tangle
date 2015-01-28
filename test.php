@@ -18,10 +18,6 @@ $s->on('receive', function ($msgsock, $buf) {
     if ($buf == 'quit') {
         return false;
     }
-    if ($buf == 'shutdown') {
-        \socket_close($msgsock);
-        return ' break 2;';
-    }
     $talkback = "PHP: You said '$buf'.\n";
     \socket_write($msgsock, $talkback, strlen($talkback));
     echo "$buf\n";
