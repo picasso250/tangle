@@ -7,6 +7,7 @@ class Server
     public $num = 8;
     public $address = '0.0.0.0';
     public $port = 8089;
+
     public function start()
     {
 
@@ -45,7 +46,7 @@ class Server
                 echo "\socket_accept() failed: reason: " . \socket_strerror(\socket_last_error($sock)) . "\n";
                 break;
             }
-            
+            echo "a client connect\n";
             $this->raise('connect', $msgsock);
 
             do {
@@ -53,29 +54,27 @@ class Server
                     echo "\socket_read() failed: reason: " . \socket_strerror(\socket_last_error($msgsock)) . "\n";
                     break 2;
                 }
-                if (!$buf = trim($buf)) {
-                    continue;
-                }
-                if ($buf == 'quit') {
+                $action = $this->raise('receive', $msgsock, $buf);
+                if ($action === false) {
                     break;
+                } elseif ($action === true) {
+                    continue;
+                } elseif ($action) {
+                    eval($action);
                 }
-                if ($buf == 'shutdown') {
-                    \socket_close($msgsock);
-                    break 2;
-                }
-                $talkback = "PHP: You said '$buf'.\n";
-                \socket_write($msgsock, $talkback, strlen($talkback));
-                echo "$buf\n";
             } while (true);
             \socket_close($msgsock);
         } while (true);
 
         \socket_close($sock);
     }
-    public function raise($event, $socket)
+    private $events;
+    public function raise($event)
     {
         if (isset($this->events[$event])) {
-            $this->events[$event]($socket);
+            $args = func_get_args();
+            array_shift($args);
+            return call_user_func_array($this->events[$event], $args);
         }
     }
     public function on($event, $callback)
