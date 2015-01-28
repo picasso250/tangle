@@ -47,11 +47,23 @@ class Server
                 echo "\socket_accept() failed: reason: " . \socket_strerror(\socket_last_error($sock)) . "\n";
                 break;
             }
+            if (\socket_set_nonblock($msgsock) === false) {
+                $this->error = \socket_last_error();
+                \socket_close($msgsock);
+                \socket_close($sock);
+                return false;
+            }
             echo "a client connect\n";
             $this->raise('connect', $msgsock);
 
             do {
-                if (false === ($buf = \socket_read($msgsock, 2048, PHP_NORMAL_READ))) {
+                $arr = [$msgsock];
+                $null = null;
+                if (!\socket_select($arr, $null, $null, 0)) {
+                    echo "\r inner run ".time();
+                    continue;
+                }
+                if (false === (\socket_recv($msgsock, $buf, 2048, MSG_DONTWAIT))) {
                     echo "\socket_read() failed: reason: " . \socket_strerror(\socket_last_error($msgsock)) . "\n";
                     break 2;
                 }

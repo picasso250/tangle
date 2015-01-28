@@ -23,6 +23,6 @@ $s->on('receive', function ($msgsock, $buf) {
     echo "$buf\n";
 });
 if ($s->start() === false) {
-    echo "failed: reason: " . \socket_strerror(\socket_last_error($sock)) . "\n";
+    echo "failed: reason: " . \socket_strerror($s->error) . "\n";
     exit(1);
 }
